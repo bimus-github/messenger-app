@@ -5,12 +5,14 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { Checking_Account_Status } from "@/models/type";
+import { ColorSchemeName } from "react-native";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -45,21 +47,58 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const [accountStatus, setAccountStatus] = useState<Checking_Account_Status>(
+    Checking_Account_Status.CHECKING
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      router.push("/auth/Landing");
+      setAccountStatus(Checking_Account_Status.LOGED_OUT);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === "light" ? DarkTheme : DefaultTheme}>
-      <Stack
-        screenOptions={{
-          contentStyle: {
-            backgroundColor:
-              colorScheme === "light"
-                ? Colors.light.bg_main
-                : Colors.dark.bg_main,
-          },
-        }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
+      {accountStatus === Checking_Account_Status.CHECKING && (
+        <CheckingPage colorScheme={colorScheme} />
+      )}
+      {accountStatus === Checking_Account_Status.LOGED_OUT && (
+        <AuthPages colorScheme={colorScheme} />
+      )}
     </ThemeProvider>
   );
 }
+
+const CheckingPage = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
+  <Stack
+    screenOptions={{
+      contentStyle: {
+        backgroundColor:
+          colorScheme === "light" ? Colors.light.bg_main : Colors.dark.bg_main,
+      },
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen name="index" options={{ headerShown: false }} />
+  </Stack>
+);
+
+const AuthPages = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
+  <Stack
+    screenOptions={{
+      contentStyle: {
+        backgroundColor:
+          colorScheme === "light" ? Colors.light.bg_main : Colors.dark.bg_main,
+      },
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen name="auth/AuthWithPhoneNumber" />
+    <Stack.Screen name="auth/Landing" />
+    <Stack.Screen name="auth/CheckingNumber" />
+  </Stack>
+);
