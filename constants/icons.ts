@@ -1,4 +1,4 @@
-export const check_bg = require("../assets/icons/check_bg.png");
+export const check_bg = require("@/assets/icons/check_big.png");
 export const chevron_down = require("../assets/icons/chevron_down.png");
 export const chevron_up = require("../assets/icons/chevron_up.png");
 export const chevron_left = require("../assets/icons/chevron_left.png");
