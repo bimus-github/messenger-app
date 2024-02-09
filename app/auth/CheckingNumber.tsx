@@ -1,16 +1,23 @@
 import Gap from "@/components/Gap";
-import { Button, OTPInput, Text, View } from "@/components/Themed";
+import { Text, View } from "@/components/Themed";
 import Header from "@/components/auth/Header";
 import Colors from "@/constants/Colors";
 import { sreenHeight, sreenWidth } from "@/constants/Dimensions";
-import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const CheckingNumber = () => {
+const CheckingNumber = ({
+  onCodeFilled,
+  isLoading,
+  phone,
+}: {
+  onCodeFilled?: (v: string) => void;
+  isLoading?: boolean;
+  phone?: string;
+}) => {
   const colorScheme = useColorScheme();
-  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
@@ -19,15 +26,8 @@ const CheckingNumber = () => {
         <Text style={styles.title}>Enter Code</Text>
         <Gap vertical={sreenHeight * 0.01} />
         <Text style={styles.extraTitle}>
-          We have sent you an SMS with the code to +62 1309 - 1710 - 1920
+          We have sent you an SMS with the code to {phone}
         </Text>
-        <OTPInput
-          autoFocusOnLoad
-          pinCount={4}
-          onCodeFilled={(code) => {
-            console.log(`Code is ${code}, you are good to go!`);
-          }}
-        />
         <Gap vertical={sreenHeight * 0.4} />
         <View style={{ alignItems: "center" }}>
           <TouchableOpacity>
