@@ -3,13 +3,13 @@ import {
   View as DefaultView,
   TouchableOpacity as DefaultTouchableOpacity,
   Image as DefaultImage,
+  ActivityIndicator as DefaultActivityIndicator,
 } from "react-native";
 
 import PhoneInput from "react-native-phone-number-input";
 
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "./useColorScheme";
-import OTPInputView from "@twotalltotems/react-native-otp-input";
 
 type ThemeProps = {
   lightColor?: string;
@@ -22,7 +22,9 @@ export type TouchableOpacityProps = ThemeProps &
   DefaultTouchableOpacity["props"] & { text: string };
 export type IconProps = ThemeProps & DefaultImage["props"];
 export type PhoneNumberInputProps = ThemeProps & PhoneInput["props"];
-export type OTPInputViewProps = ThemeProps & OTPInputView["props"];
+
+export type ActivityIndicatorProps = ThemeProps &
+  DefaultActivityIndicator["props"];
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
@@ -131,23 +133,10 @@ export function PhoneNumberInput(props: PhoneNumberInputProps) {
   );
 }
 
-export function OTPInput(props: OTPInputViewProps) {
-  const { lightColor, darkColor, ...otherProps } = props;
-  const backgroundColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "bg_input"
-  );
+export function ActivityIndicator(props: ActivityIndicatorProps) {
   const color = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "text_placeholder"
+    { light: Colors.light.text_main, dark: Colors.dark.text_main },
+    "text_main"
   );
-  return (
-    <OTPInputView
-      style={{ width: "100%", height: 100 }}
-      codeInputHighlightStyle={{ backgroundColor, borderRadius: 100, color }}
-      codeInputFieldStyle={{ backgroundColor, borderRadius: 100, color }}
-      placeholderTextColor={color}
-      {...otherProps}
-    />
-  );
+  return <DefaultActivityIndicator color={color} {...props} />;
 }
