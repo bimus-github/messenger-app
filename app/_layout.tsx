@@ -13,6 +13,13 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Checking_Account_Status } from "@/models/type";
 import { ColorSchemeName } from "react-native";
+import { Provider } from "react-redux";
+import store from "@/store";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/firebase";
+import { useAppDispatch } from "@/store/hooks";
+import { getUser } from "@/firebase/functions/user";
+import { userActions } from "@/store/slices/user";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -46,6 +53,15 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  return (
+    <Provider store={store}>
+      <Checking />
+    </Provider>
+  );
+}
+
+const Checking = () => {
+  const dispatch = useAppDispatch();
   const colorScheme = useColorScheme();
   const router = useRouter();
   const [accountStatus, setAccountStatus] = useState<Checking_Account_Status>(
@@ -53,27 +69,46 @@ function RootLayoutNav() {
   );
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      router.push("/auth/Landing");
-      setAccountStatus(Checking_Account_Status.LOGED_OUT);
-    }, 1000);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log(user.uid);
 
-    return () => clearTimeout(timeoutId);
-  }, []);
+        getUser(user.uid)
+          .then((user) => {
+            router.push("/messenger/Chats");
+            setAccountStatus(Checking_Account_Status.SIGNED_IN);
+            dispatch(userActions.setUser(user));
+          })
+          .catch(() => {
+            router.push("/auth/Landing");
+            setAccountStatus(Checking_Account_Status.LOGED_OUT);
+            dispatch(userActions.setUser(null));
+          });
+      } else {
+        console.log(user);
+
+        router.push("/auth/Landing");
+        setAccountStatus(Checking_Account_Status.LOGED_OUT);
+      }
+    });
+  }, [dispatch, router]);
 
   return (
     <ThemeProvider value={colorScheme === "light" ? DarkTheme : DefaultTheme}>
       {accountStatus === Checking_Account_Status.CHECKING && (
-        <CheckingPage colorScheme={colorScheme} />
+        <LoadingPage colorScheme={colorScheme} />
       )}
       {accountStatus === Checking_Account_Status.LOGED_OUT && (
         <AuthPages colorScheme={colorScheme} />
       )}
+      {accountStatus === Checking_Account_Status.SIGNED_IN && (
+        <MessengerPages colorScheme={colorScheme} />
+      )}
     </ThemeProvider>
   );
-}
+};
 
-const CheckingPage = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
+const LoadingPage = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
   <Stack
     screenOptions={{
       contentStyle: {
@@ -100,5 +135,19 @@ const AuthPages = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
     <Stack.Screen name="auth/AuthWithPhoneNumber" />
     <Stack.Screen name="auth/Landing" />
     <Stack.Screen name="auth/CheckingNumber" />
+  </Stack>
+);
+
+const MessengerPages = ({ colorScheme }: { colorScheme: ColorSchemeName }) => (
+  <Stack
+    screenOptions={{
+      contentStyle: {
+        backgroundColor:
+          colorScheme === "light" ? Colors.light.bg_main : Colors.dark.bg_main,
+      },
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen name="messenger/Chats" />
   </Stack>
 );
